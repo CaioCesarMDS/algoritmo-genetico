@@ -1,6 +1,6 @@
 #A => Ganho/Benefício
 #C => Custo/Peso
-#S => Capacidade 
+#S => Capacidade
 
 A_10 = [55, 10, 47, 5, 4, 50, 8, 61, 85, 87]
 C_10 = [95, 4, 60, 32, 23, 72, 80, 62, 65, 46]
