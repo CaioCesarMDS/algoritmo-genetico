@@ -1,6 +1,7 @@
 import random
 from knapsack import knapsack
 
+
 def gerar_populacao(tamanho_populacao, n_itens):
     # Gera uma população inicial aleatória
     populacao = []
@@ -8,6 +9,7 @@ def gerar_populacao(tamanho_populacao, n_itens):
         individuo = [int(random.random() > 0.8) for _ in range(n_itens)]
         populacao.append(individuo)
     return populacao
+
 
 def gerar_vizinhos(solucao, n_vizinhos=50, flips_por_vizinho=2):
     vizinhos = []
@@ -22,6 +24,7 @@ def gerar_vizinhos(solucao, n_vizinhos=50, flips_por_vizinho=2):
 
     return vizinhos
 
+
 def avaliar_populacao(populacao):
     fitness = []
 
@@ -30,9 +33,28 @@ def avaliar_populacao(populacao):
 
     return fitness
 
-def selecao_torneio(avaliacao):
-    for competidor in avaliacao:
-        print(competidor, "\n")
+
+def selecao_torneio(avaliacao, populacao):
+    vencedores = []
+    for i in range(0, len(avaliacao), 3):
+        competidor1 = avaliacao[i]
+        competidor2 = avaliacao[i + 1]
+        if i != 48:
+            competidor3 = avaliacao[i + 2]
+        else:
+            competidor3 = 0
+
+        if competidor1 >= competidor2 and competidor1 >= competidor3:
+            vencedores.append({"individuo": populacao[i], "fitness": competidor1})
+
+        if competidor2 >= competidor1 and competidor2 >= competidor3:
+            vencedores.append({"individuo": populacao[i + 1], "fitness": competidor1})
+
+        if competidor3 > competidor1 and competidor3 > competidor2:
+            vencedores.append({"individuo": populacao[i + 2], "fitness": competidor1})
+    
+    return vencedores
+
 
 if __name__ == "__main__":
     tamanho_populacao = 50
@@ -42,8 +64,9 @@ if __name__ == "__main__":
     fitness = avaliar_populacao(populacao)
     print("=== AVALIAÇÃO (FITNESS) DA POPULAÇÃO INICIAL ===\n")
     print(fitness)
-    print("\n===============================================\n")
-
-    # torneio(avaliacao_populacao)
-    # fitness = lambda solucao_inicial: knapsack(solucao_inicial, 20)
+    print("\n==TORNEIRO DE 3==\n")
+    vencedores = selecao_torneio(fitness, populacao)
+    
+    for vencedor in vencedores:
+        print(vencedor, "\n")
 
