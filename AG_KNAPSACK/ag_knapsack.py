@@ -36,22 +36,28 @@ def avaliar_populacao(populacao):
 
 def selecao_torneio(avaliacao, populacao):
     vencedores = []
-    for i in range(0, len(avaliacao), 3):
-        competidor1 = avaliacao[i]
-        competidor2 = avaliacao[i + 1]
-        if i != 48:
-            competidor3 = avaliacao[i + 2]
-        else:
-            competidor3 = 0
+    combinacoes = []
+    for i in range(len(avaliacao)):
+        competidores = random.sample(avaliacao, 3)
 
+        if combinacoes.__contains__(competidores):
+            while True:
+                competidores = random.sample(avaliacao, 3)
+                if not combinacoes.__contains__(competidores):
+                    break
+        
+        competidor1 = competidores[0]
+        competidor2 = competidores[1]
+        competidor3 = competidores[2]
+        
         if competidor1 >= competidor2 and competidor1 >= competidor3:
-            vencedores.append({"individuo": populacao[i], "fitness": competidor1})
+            vencedores.append({"individuo": populacao[avaliacao.index(competidor1)], "fitness": competidor1})
 
         if competidor2 >= competidor1 and competidor2 >= competidor3:
-            vencedores.append({"individuo": populacao[i + 1], "fitness": competidor1})
+            vencedores.append({"individuo": populacao[avaliacao.index(competidor2)], "fitness": competidor1})
 
         if competidor3 > competidor1 and competidor3 > competidor2:
-            vencedores.append({"individuo": populacao[i + 2], "fitness": competidor1})
+            vencedores.append({"individuo": populacao[avaliacao.index(competidor3)], "fitness": competidor1})
     
     return vencedores
 
