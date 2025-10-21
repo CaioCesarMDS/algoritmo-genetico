@@ -81,50 +81,84 @@ def aplicar_crossover(pai1, pai2, tipo="um_ponto", taxa_crossover=0.8):
 
     return filho1, filho2
 
-def aplicar_mutacao(populacao, taxa_mutacao=0.02):
+def aplicar_mutacao(individuo, taxa_mutacao=0.02):
     """
     Aplica mutação bit-flip a um indivíduo.
     Cada bit tem chance 'taxa_mutacao' de ser invertido (0 → 1 ou 1 → 0).
     """
-    nova_populacao = []
-    for p in populacao:
-        for i in range(len(p)):
-            if random.random() < taxa_mutacao:
-                p[i] = 1 - p[i]  # inverte o bit
-        nova_populacao.append(p)
-    
-    return nova_populacao
+    novo_individuo = individuo.copy()
+    for i in range(len(novo_individuo)):
+        if random.random() < taxa_mutacao:
+            novo_individuo[i] = 1 - novo_individuo[i]  # inverte o bit
+
+    return novo_individuo
+
+
+def elitismo(populacao, fitness, nova_populacao, fitness_nova_populacao, n_elite=2):
+    """
+    Substitui os piores indivíduos da nova população pelos melhores da antiga.
+    """
+    # Encontra os índices(n_elite = 2) dos melhores da população antiga, cada indivíduo é representado por seu índice na lista
+    elite_indices = sorted(range(len(fitness)), key=lambda i: fitness[i], reverse=True)[:n_elite]
+
+    # pega os melhores indivíduos
+    elite = [populacao[i] for i in elite_indices]
+    elite_fitness = [fitness[i] for i in elite_indices]
+
+    # Encontra os índices dos piores da nova população
+    piores_indices = sorted(range(len(fitness_nova_populacao)), key=lambda i: fitness_nova_populacao[i])[:n_elite]
+
+    # Substitui os piores da nova população pelos melhores da antiga
+    for idx_pior, elite_ind, elite_fit in zip(piores_indices, elite, elite_fitness):
+        nova_populacao[idx_pior] = elite_ind
+        fitness_nova_populacao[idx_pior] = elite_fit
+
+    return nova_populacao, fitness_nova_populacao
+
+def rodar_algoritmo_genetico(tamanho_populacao, n_itens, tipo_crossover, taxa_crossover, taxa_mutacao, n_geracoes):
+        populacao = gerar_populacao(tamanho_populacao, n_itens)
+
+        for geracao in range(n_geracoes):
+            fitness = avaliar_populacao(populacao)
+
+            nova_populacao = []
+            while len(nova_populacao) < tamanho_populacao:
+                pai1 = selecao_torneio(fitness, populacao)
+                pai2 = selecao_torneio(fitness, populacao)
+                filho1, filho2 = aplicar_crossover(pai1, pai2, tipo=tipo_crossover, taxa_crossover=taxa_crossover)
+
+                filho1 = aplicar_mutacao(filho1, taxa_mutacao=taxa_mutacao)
+                filho2 = aplicar_mutacao(filho2, taxa_mutacao=taxa_mutacao)
+
+                nova_populacao.extend([filho1, filho2])
+
+            fitness_nova_populacao = avaliar_populacao(nova_populacao)
+
+            nova_populacao, fitness_nova_populacao = elitismo(populacao, fitness, nova_populacao, fitness_nova_populacao, n_elite=2)
+
+            populacao = nova_populacao
+
+        fitness_final = avaliar_populacao(populacao)
+        return max(fitness_final)
+
+def experimento(tamanho_populacao=50, n_itens=20, n_geracoes=500, n_execucoes=30, taxa_crossover=0.8, taxa_mutacao=0.02):
+    resultados = {}
+    tipos = ["um_ponto", "dois_pontos", "uniforme"]
+
+    for tipo in tipos:
+        bests = []
+        for execu in range(n_execucoes):
+            best = rodar_algoritmo_genetico(tamanho_populacao, n_itens, tipo, taxa_crossover, taxa_mutacao, n_geracoes)
+            bests.append(best)
+
+    return resultados
 
 if __name__ == "__main__":
-    tamanho_populacao = 50
-    n_itens = 20
-
-    # Gera base antes dos pais
-    populacao = gerar_populacao(tamanho_populacao, n_itens)
-    fitness = avaliar_populacao(populacao)
-
-    print("População Inicial:")
-    for individuo, fit in zip(populacao, fitness):
-        print(f"Indivíduo: {individuo}, Fitness: {fit}")
-
-    print("\nCrossover na População...\n")
-    # Faz seleção dos pais no torneio e já aplica crossover
-    nova_populacao = []
-    while len(nova_populacao) < tamanho_populacao:
-        pai1 = selecao_torneio(fitness, populacao)
-        pai2 = selecao_torneio(fitness, populacao)
-        filho1, filho2 = aplicar_crossover(pai1, pai2, tipo="dois_pontos", taxa_crossover=0.8)
-        nova_populacao.extend([filho1, filho2])
-
-    fitness_nova_populacao = avaliar_populacao(nova_populacao)
-
-    print("Nova população após crossover:")
-    for individuo, fit in zip(nova_populacao, fitness_nova_populacao):
-        print(f"Indivíduo: {individuo}, Fitness: {fit}")
-    
-    #Faz mutação nos filhos e avalia novamente
-    nova_populacao = aplicar_mutacao(nova_populacao)
-    fitness_nova_populacao = avaliar_populacao(nova_populacao)
-    print("Nova população após mutação:")
-    for individuo, fit in zip(nova_populacao, fitness_nova_populacao):
-        print(f"Indivíduo: {individuo}, Fitness: {fit}")
+    res = experimento(
+        tamanho_populacao=50,
+        n_itens=20,
+        n_geracoes=500,
+        n_execucoes=30,
+        taxa_crossover=0.8,
+        taxa_mutacao=0.02
+    )
