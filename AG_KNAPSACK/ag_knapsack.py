@@ -81,11 +81,25 @@ def aplicar_crossover(pai1, pai2, tipo="um_ponto", taxa_crossover=0.8):
 
     return filho1, filho2
 
+def aplicar_mutacao(populacao, taxa_mutacao=0.02):
+    """
+    Aplica mutação bit-flip a um indivíduo.
+    Cada bit tem chance 'taxa_mutacao' de ser invertido (0 → 1 ou 1 → 0).
+    """
+    nova_populacao = []
+    for p in populacao:
+        for i in range(len(p)):
+            if random.random() < taxa_mutacao:
+                p[i] = 1 - p[i]  # inverte o bit
+        nova_populacao.append(p)
+    
+    return nova_populacao
 
 if __name__ == "__main__":
     tamanho_populacao = 50
     n_itens = 20
 
+    # Gera base antes dos pais
     populacao = gerar_populacao(tamanho_populacao, n_itens)
     fitness = avaliar_populacao(populacao)
 
@@ -94,7 +108,7 @@ if __name__ == "__main__":
         print(f"Indivíduo: {individuo}, Fitness: {fit}")
 
     print("\nCrossover na População...\n")
-
+    # Faz seleção dos pais no torneio e já aplica crossover
     nova_populacao = []
     while len(nova_populacao) < tamanho_populacao:
         pai1 = selecao_torneio(fitness, populacao)
@@ -104,6 +118,13 @@ if __name__ == "__main__":
 
     fitness_nova_populacao = avaliar_populacao(nova_populacao)
 
-    print("População Nova:")
+    print("Nova população após crossover:")
+    for individuo, fit in zip(nova_populacao, fitness_nova_populacao):
+        print(f"Indivíduo: {individuo}, Fitness: {fit}")
+    
+    #Faz mutação nos filhos e avalia novamente
+    nova_populacao = aplicar_mutacao(nova_populacao)
+    fitness_nova_populacao = avaliar_populacao(nova_populacao)
+    print("Nova população após mutação:")
     for individuo, fit in zip(nova_populacao, fitness_nova_populacao):
         print(f"Indivíduo: {individuo}, Fitness: {fit}")
