@@ -1,5 +1,10 @@
 import copy
 import random
+import sys
+from knapsack import knapsack
+import random
+import numpy
+import matplotlib.pyplot as plt
 
 def gerar_vizinhos_knapsack(solucao, n_vizinhos=20):
     """
@@ -29,7 +34,7 @@ def gerar_vizinhos_knapsack(solucao, n_vizinhos=20):
 
     return vizinhos
 
-class HillClimbing:
+class StocasticHillClimbing:
     def __init__(self, funcao_fitness, gerar_vizinhos, maximizar=True):
         """
         Inicializa o algoritmo Hill Climbing
@@ -105,44 +110,39 @@ class HillClimbing:
 
         return solucao_atual, fitness_atual, self.historico
 
-if __name__ == "__main__":
-    import sys
-    from knapsack import knapsack
-    import random
-    import numpy as np
-    import matplotlib.pyplot as plt
+# if __name__ == "__main__":
 
-    # Configuração do problema knapsack
-    DIM = 20
-    MAX_ITERACOES = 200
-    N_SIMULACOES = 30
-    lista_fitness_simulacoes = []
+#     # Configuração do problema knapsack
+#     DIM = 20
+#     MAX_ITERACOES = 200
+#     N_SIMULACOES = 30
+#     lista_fitness_simulacoes = []
 
-    for i in range(N_SIMULACOES):
-        # Gerar solução inicial aleatória
-        solucao_inicial = [int(random.random() > 0.8) for _ in range(DIM)]
+#     for i in range(N_SIMULACOES):
+#         # Gerar solução inicial aleatória
+#         solucao_inicial = [int(random.random() > 0.8) for _ in range(DIM)]
 
-        # Inicializar e executar Hill Climbing
-        hill_climbing = HillClimbing(
-            funcao_fitness=lambda sol: knapsack(sol, dim=DIM)[0],  # Maximizar valor total
-            gerar_vizinhos=gerar_vizinhos_knapsack,
-            maximizar=True,
-        )
+#         # Inicializar e executar Hill Climbing
+#         hill_climbing = StocasticHillClimbing(
+#             funcao_fitness=lambda sol: knapsack(sol, dim=DIM)[0],  # Maximizar valor total
+#             gerar_vizinhos=gerar_vizinhos_knapsack,
+#             maximizar=True,
+#         )
 
-        _, melhor_fitness, _ = hill_climbing.executar(
-            solucao_inicial, max_iteracoes=MAX_ITERACOES, verbose=False
-        )
-        lista_fitness_simulacoes.append(melhor_fitness)
+#         _, melhor_fitness, _ = hill_climbing.executar(
+#             solucao_inicial, max_iteracoes=MAX_ITERACOES, verbose=False
+#         )
+#         lista_fitness_simulacoes.append(melhor_fitness)
 
-# Analisar resultados após todas as simulações
-media = np.mean(lista_fitness_simulacoes)
-desvio_padrao = np.std(lista_fitness_simulacoes)
-print(f"\n--- RESULTADOS FINAIS APÓS {N_SIMULACOES} SIMULAÇÕES ---")
-print(f"Fitness médio: {media:.2f}")
-print(f"Desvio padrão: {desvio_padrao:.2f}")
+# # Analisar resultados após todas as simulações
+# media = numpy.mean(lista_fitness_simulacoes)
+# desvio_padrao = numpy.std(lista_fitness_simulacoes)
+# print(f"\n--- RESULTADOS FINAIS APÓS {N_SIMULACOES} SIMULAÇÕES ---")
+# print(f"Fitness médio: {media:.2f}")
+# print(f"Desvio padrão: {desvio_padrao:.2f}")
 
-# Plotar boxplot dos resultados
-plt.boxplot(lista_fitness_simulacoes)
-plt.title(f"\n--- Distribuição do Fitness após {N_SIMULACOES} simulações ---")
-plt.ylabel("Fitness (Valor Total da Mochila)")
-plt.show()
+# # Plotar boxplot dos resultados
+# plt.boxplot(lista_fitness_simulacoes)
+# plt.title(f"\n--- Distribuição do Fitness após {N_SIMULACOES} simulações ---")
+# plt.ylabel("Fitness (Valor Total da Mochila)")
+# plt.show()
