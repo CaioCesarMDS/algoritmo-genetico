@@ -6,6 +6,7 @@ import seaborn as sns
 import pandas as pd
 from hill_climbing import HillClimbing
 from stochaist_hill_climbing import StocasticHillClimbing
+from hill_climbing import gerar_vizinhos_knapsack
 
 
 def gerar_populacao(tamanho_populacao, n_itens):
@@ -188,15 +189,18 @@ def experimento(tamanho_populacao=50, n_itens=20, n_geracoes=500, n_execucoes=10
 
 # === Execução principal ===
 if __name__ == "__main__":
+    
+    dados_boxplot = []
+    
     dados_convergencia, dados_boxplot, res = experimento(
         tamanho_populacao=50,
         n_itens=20,
-        n_geracoes=2,
-        n_execucoes=2,
+        n_geracoes=500,
+        n_execucoes=30,
         taxa_crossover=0.8,
         taxa_mutacao=0.02,
     )
-    
+        
     # Printa resultados
     for res in res:
         print(res, "\n")   
@@ -213,8 +217,8 @@ if __name__ == "__main__":
 
         # Inicializar e executar Hill Climbing
         hill_climbing = HillClimbing(
-            funcao_fitness=lambda sol: knapsack(sol, dim=DIM)[0],  # Maximizar valor total
-            gerar_vizinhos=gerar_populacao,
+            funcao_fitness=lambda sol: knapsack(sol, dim=DIM),  # Maximizar valor total
+            gerar_vizinhos=gerar_vizinhos_knapsack,
             maximizar=True,
         )
 
@@ -223,8 +227,8 @@ if __name__ == "__main__":
         )
         lista_fitness_simulacoes.append(melhor_fitness)
     
-    dados_boxplot.append({"Hill Climbing": max(lista_fitness_simulacoes)})
-        
+    dados_boxplot.append({"config": "Hill Climbing", "melhor_fitness_final": max(lista_fitness_simulacoes)})
+            
     # Configuração do problema knapsack
     DIM = 20
     MAX_ITERACOES = 200
@@ -237,8 +241,8 @@ if __name__ == "__main__":
 
         # Inicializar e executar Hill Climbing
         hill_climbing = StocasticHillClimbing(
-            funcao_fitness=lambda sol: knapsack(sol, dim=DIM)[0],  # Maximizar valor total
-            gerar_vizinhos=gerar_populacao,
+            funcao_fitness=lambda sol: knapsack(sol, dim=DIM),  # Maximizar valor total
+            gerar_vizinhos=gerar_vizinhos_knapsack,
             maximizar=True,
         )
 
@@ -247,8 +251,8 @@ if __name__ == "__main__":
         )
         lista_fitness_simulacoes.append(melhor_fitness)
         
-    dados_boxplot.append({"Stocastic Hill Climbing": max(lista_fitness_simulacoes)})
-    
+    dados_boxplot.append({"config": "Stocastic Hill Climbing", "melhor_fitness_final": max(lista_fitness_simulacoes)})
+        
     # Cria DataFrames
     df_conv = pd.DataFrame(dados_convergencia)
     df_box = pd.DataFrame(dados_boxplot)
