@@ -1,6 +1,7 @@
 import random
 from TSP_13_cities.tsp_utils import calculate_distance
 
+
 def gerar_populacao(tamanho_populacao):
     # Gera uma população inicial aleatória
     populacao = []
@@ -39,9 +40,25 @@ def preencher(filho, pai, inicio):
             filho[pos % n] = cidade
             pos += 1
 
+def selecao_torneio(avaliacao, populacao, tamanho_torneio=3):
+    """
+    Seleciona um indivíduo usando torneio de tamanho definido (padrão: 3).
+    Retorna apenas o indivíduo vencedor.
+    """
+    # Seleciona aleatoriamente 3 indivíduos
+    competidores = random.sample(range(len(populacao)), tamanho_torneio)
+    # Retorna o melhor (menor valor de fitness)
+    vencedor = min(competidores, key=lambda ind: avaliacao[ind])
+
+    return populacao[vencedor], competidores
+
 # === Execução principal ===
 if __name__ == "__main__":
     populacao = gerar_populacao(tamanho_populacao=50)
-    for individuo in populacao:
-        print(individuo, "\n")
-        print(calculate_distance(individuo), "\n")
+
+    avaliacao = [calculate_distance(individuo) for individuo in populacao]
+
+    vencedor = selecao_torneio(avaliacao, populacao, tamanho_torneio=3)
+
+    print("Indivíduo vencedor do torneio:", vencedor)
+    print("Distância do vencedor:", calculate_distance(vencedor))
