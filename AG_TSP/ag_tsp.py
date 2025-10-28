@@ -22,17 +22,20 @@ def selecao_torneio(avaliacao, populacao, tamanho_torneio=3):
     # Retorna o melhor (menor valor de fitness)
     vencedor = min(competidores, key=lambda ind: avaliacao[ind])
     
-    return populacao[vencedor], competidores
+    return populacao[vencedor]
 
-def aplicar_mutacao(individuo, taxa_mutacao=0.02):
+def aplicar_mutacao_swap(individuo, taxa_mutacao=0.05):
     """
-    Aplica mutação bit-flip a um indivíduo.
-    Cada bit tem chance 'taxa_mutacao' de ser invertido (0 → 1 ou 1 → 0).
+    Aplica mutação swap a um indivíduo.
+    Cada par de cidades tem chance 'taxa_mutacao' de ter suas posições trocadas.
     """
     novo_individuo = individuo.copy()
     for i in range(len(novo_individuo)):
         if random.random() < taxa_mutacao:
-            novo_individuo[i] = 1 - novo_individuo[i]  # inverte o bit
+            # Escolhe duas posições diferentes
+            i, j = random.sample(range(len(novo_individuo)), 2)
+            # Troca os valores
+            novo_individuo[i], novo_individuo[j] = novo_individuo[j], novo_individuo[i]
 
     return novo_individuo
 
@@ -46,3 +49,4 @@ if __name__ == "__main__":
 
     print("Indivíduo vencedor do torneio:", vencedor)
     print("Distância do vencedor:", calculate_distance(vencedor))
+    print("swap mutation aplicado:", aplicar_mutacao_swap(vencedor, taxa_mutacao=0.05))
