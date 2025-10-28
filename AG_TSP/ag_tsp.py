@@ -1,7 +1,6 @@
 import random
 from TSP_13_cities.tsp_utils import calculate_distance
 
-
 def gerar_populacao(tamanho_populacao):
     # Gera uma população inicial aleatória
     populacao = []
@@ -51,6 +50,30 @@ def selecao_torneio(avaliacao, populacao, tamanho_torneio=3):
     vencedor = min(competidores, key=lambda ind: avaliacao[ind])
 
     return populacao[vencedor], competidores
+
+def elitismo(populacao, fitness, nova_populacao, fitness_nova_populacao, n_elite=5):
+    """
+    Mantém os n_elite melhores indivíduos (menor distância) da população antiga
+    substituindo os piores da nova.
+    """
+    # índices dos melhores da população antiga (menores distâncias)
+    elite_indices = sorted(range(len(fitness)), key=lambda i: fitness[i])[:n_elite]
+
+    elite = [populacao[i] for i in elite_indices]
+    elite_fitness = [fitness[i] for i in elite_indices]
+
+    # índices dos piores da nova população (maiores distâncias)
+    piores_indices = sorted(
+        range(len(fitness_nova_populacao)),
+        key=lambda i: fitness_nova_populacao[i],
+        reverse=True,
+    )[:n_elite]
+
+    for idx_pior, elite_ind, elite_fit in zip(piores_indices, elite, elite_fitness):
+        nova_populacao[idx_pior] = elite_ind
+        fitness_nova_populacao[idx_pior] = elite_fit
+
+    return nova_populacao, fitness_nova_populacao
 
 # === Execução principal ===
 if __name__ == "__main__":
