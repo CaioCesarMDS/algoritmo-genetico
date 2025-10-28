@@ -182,7 +182,7 @@ def experimento(tamanho_populacao=50, n_itens=20, n_geracoes=500, n_execucoes=10
 
             # Armazena para o boxplot
             dados_boxplot.append({"config": tipo, "melhor_fitness_final": melhor_final})
-        resultados.append({tipo: { "melhor": max(melhores), "média": sum(melhores) / len(melhores), "desvio de padrão": numpy.std(melhores) }})
+        resultados.append({tipo: { "melhor": max(melhores), "média": sum(melhores) / len(melhores), "desvio de padrão": round(float(numpy.std(melhores)), 2) }})
 
     return dados_convergencia, dados_boxplot, resultados
 

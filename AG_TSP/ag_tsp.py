@@ -1,5 +1,9 @@
 import random
 from TSP_13_cities.tsp_utils import calculate_distance
+import numpy
+import matplotlib.pyplot as plt
+import seaborn as sns
+import pandas as pd
 
 def gerar_populacao(tamanho_populacao):
     # Gera uma população inicial aleatória
@@ -9,6 +13,12 @@ def gerar_populacao(tamanho_populacao):
         individuo = random.sample(ex_route, len(ex_route))
         populacao.append(individuo)
     return populacao
+
+def avaliar_populacao(populacao):
+    fitness = []
+    for individuo in populacao:
+        fitness.append(calculate_distance(individuo))
+    return fitness
 
 def order_crossover(pai1, pai2, taxa_crossover=0.9):
     if random.random() >= taxa_crossover:
@@ -90,14 +100,91 @@ def elitismo(populacao, fitness, nova_populacao, fitness_nova_populacao, n_elite
 
     return nova_populacao, fitness_nova_populacao
 
+def rodar_algoritmo_genetico(tamanho_populacao, taxa_crossover, taxa_mutacao, n_geracoes):
+    populacao = gerar_populacao(tamanho_populacao)
+    historico_melhor = []  # Armazena o melhor fitness por geração
+
+    for _ in range(n_geracoes):
+        fitness = avaliar_populacao(populacao)
+        historico_melhor.append(min(fitness))
+
+        nova_populacao = []
+        while len(nova_populacao) < tamanho_populacao:
+            pai1 = selecao_torneio(fitness, populacao)
+            pai2 = selecao_torneio(fitness, populacao)
+            filho1, filho2 = order_crossover(pai1, pai2, taxa_crossover=taxa_crossover)
+            filho1 = aplicar_mutacao_swap(filho1, taxa_mutacao)
+            filho2 = aplicar_mutacao_swap(filho2, taxa_mutacao)
+            nova_populacao.extend([filho1, filho2])
+
+        nova_populacao = nova_populacao[:tamanho_populacao]
+        fitness_nova_populacao = avaliar_populacao(nova_populacao)
+        nova_populacao, fitness_nova_populacao = elitismo(populacao, fitness, nova_populacao, fitness_nova_populacao, 2)
+        populacao = nova_populacao
+
+    fitness_final = avaliar_populacao(populacao)
+    melhor_final = min(fitness_final)
+    return melhor_final, historico_melhor
+
+def experimento(tamanho_populacao=50, n_geracoes=400, n_execucoes=30, taxa_crossover=0.9, taxa_mutacao=0.05):
+    resultados = []
+    dados_convergencia = []
+
+
+    melhores = []
+    print(f"\nExecutando Experimento")
+    for _ in range(n_execucoes):
+            
+        melhor_final, historico = rodar_algoritmo_genetico(
+            tamanho_populacao, taxa_crossover, taxa_mutacao, n_geracoes
+        )
+            
+        melhores.append(melhor_final)
+
+        # Armazena para o gráfico de convergência
+        for g, fit in enumerate(historico):
+            dados_convergencia.append({"geracao": g, "melhor_fitness": fit})
+
+    resultados.append({ "melhor": min(melhores), "média": sum(melhores) / len(melhores), "desvio de padrão": round(float(numpy.std(melhores)), 2) })
+
+    return dados_convergencia, resultados, melhores
+
+
 # === Execução principal ===
 if __name__ == "__main__":
-    populacao = gerar_populacao(tamanho_populacao=50)
+    
+    dados_convergencia, res, melhores = experimento(
+        tamanho_populacao=50,
+        n_geracoes=500,
+        n_execucoes=30,
+        taxa_crossover=0.9,
+        taxa_mutacao=0.05,
+    )
+        
+    # Printa resultados
+    for res in res:
+        print(res, "\n")
+        
+    df_conv = pd.DataFrame(dados_convergencia)
+    
+    # === Gráfico de convergência ===
+    plt.figure(figsize=(10, 6))
+    sns.lineplot(data=df_conv, x="geracao", y="melhor_fitness")
+    plt.title("Convergência do Algoritmo Genético")
+    plt.xlabel("Geração")
+    plt.ylabel("Melhor Fitness")
+    plt.grid(True)
+    plt.show()
 
-    avaliacao = [calculate_distance(individuo) for individuo in populacao]
+    # === Boxplot comparando configurações ===
+    plt.figure(figsize=(6, 4))
+    plt.boxplot(melhores, vert=True, patch_artist=True,
+                boxprops=dict(facecolor='lightblue', color='black'),
+                medianprops=dict(color='red', linewidth=2),
+                whiskerprops=dict(color='black'),
+                capprops=dict(color='black'))
 
-    vencedor = selecao_torneio(avaliacao, populacao, tamanho_torneio=3)
-
-    print("Indivíduo vencedor do torneio:", vencedor)
-    print("Distância do vencedor:", calculate_distance(vencedor))
-    print("swap mutation aplicado:", aplicar_mutacao_swap(vencedor, taxa_mutacao=0.05))
+    plt.title("Distribuição dos resultados finais do AG - TSP")
+    plt.ylabel("Distância total (menor é melhor)")
+    plt.grid(True, linestyle="--", alpha=0.6)
+    plt.show()
