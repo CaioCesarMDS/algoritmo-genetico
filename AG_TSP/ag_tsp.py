@@ -48,8 +48,23 @@ def selecao_torneio(avaliacao, populacao, tamanho_torneio=3):
     competidores = random.sample(range(len(populacao)), tamanho_torneio)
     # Retorna o melhor (menor valor de fitness)
     vencedor = min(competidores, key=lambda ind: avaliacao[ind])
+    
+    return populacao[vencedor]
 
-    return populacao[vencedor], competidores
+def aplicar_mutacao_swap(individuo, taxa_mutacao=0.05):
+    """
+    Aplica mutação swap a um indivíduo.
+    Cada par de cidades tem chance 'taxa_mutacao' de ter suas posições trocadas.
+    """
+    novo_individuo = individuo.copy()
+    for i in range(len(novo_individuo)):
+        if random.random() < taxa_mutacao:
+            # Escolhe duas posições diferentes
+            i, j = random.sample(range(len(novo_individuo)), 2)
+            # Troca os valores
+            novo_individuo[i], novo_individuo[j] = novo_individuo[j], novo_individuo[i]
+
+    return novo_individuo
 
 def elitismo(populacao, fitness, nova_populacao, fitness_nova_populacao, n_elite=5):
     """
@@ -85,3 +100,4 @@ if __name__ == "__main__":
 
     print("Indivíduo vencedor do torneio:", vencedor)
     print("Distância do vencedor:", calculate_distance(vencedor))
+    print("swap mutation aplicado:", aplicar_mutacao_swap(vencedor, taxa_mutacao=0.05))
