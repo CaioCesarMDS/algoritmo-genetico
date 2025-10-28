@@ -1,5 +1,5 @@
 import random
-from .TSP_13_cities.tsp_utils import calculate_distance
+from TSP_13_cities.tsp_utils import calculate_distance
 
 def gerar_populacao(tamanho_populacao):
     # Gera uma população inicial aleatória
