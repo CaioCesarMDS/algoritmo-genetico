@@ -4,6 +4,7 @@ import numpy
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
+import time
 
 def gerar_populacao(tamanho_populacao):
     # Gera uma população inicial aleatória
@@ -100,7 +101,7 @@ def elitismo(populacao, fitness, nova_populacao, fitness_nova_populacao, n_elite
 
     return nova_populacao, fitness_nova_populacao
 
-def rodar_algoritmo_genetico(tamanho_populacao, taxa_crossover, taxa_mutacao, n_geracoes):
+def rodar_algoritmo_genetico(tamanho_populacao, tamanho_torneio, taxa_crossover, taxa_mutacao, n_geracoes, n_elite):
     populacao = gerar_populacao(tamanho_populacao)
     historico_melhor = []  # Armazena o melhor fitness por geração
 
@@ -110,8 +111,8 @@ def rodar_algoritmo_genetico(tamanho_populacao, taxa_crossover, taxa_mutacao, n_
 
         nova_populacao = []
         while len(nova_populacao) < tamanho_populacao:
-            pai1 = selecao_torneio(fitness, populacao)
-            pai2 = selecao_torneio(fitness, populacao)
+            pai1 = selecao_torneio(fitness, populacao, tamanho_torneio)
+            pai2 = selecao_torneio(fitness, populacao, tamanho_torneio)
             filho1, filho2 = order_crossover(pai1, pai2, taxa_crossover=taxa_crossover)
             filho1 = aplicar_mutacao_swap(filho1, taxa_mutacao)
             filho2 = aplicar_mutacao_swap(filho2, taxa_mutacao)
@@ -119,24 +120,25 @@ def rodar_algoritmo_genetico(tamanho_populacao, taxa_crossover, taxa_mutacao, n_
 
         nova_populacao = nova_populacao[:tamanho_populacao]
         fitness_nova_populacao = avaliar_populacao(nova_populacao)
-        nova_populacao, fitness_nova_populacao = elitismo(populacao, fitness, nova_populacao, fitness_nova_populacao, 2)
+        nova_populacao, fitness_nova_populacao = elitismo(populacao, fitness, nova_populacao, fitness_nova_populacao, n_elite)
         populacao = nova_populacao
 
     fitness_final = avaliar_populacao(populacao)
     melhor_final = min(fitness_final)
     return melhor_final, historico_melhor
 
-def experimento(tamanho_populacao=50, n_geracoes=400, n_execucoes=30, taxa_crossover=0.9, taxa_mutacao=0.05):
+def experimento(tamanho_populacao=50, tamanho_torneio=3, n_geracoes=400, n_execucoes=30, taxa_crossover=0.9, taxa_mutacao=0.05, n_elite=5):
     resultados = []
     dados_convergencia = []
 
 
     melhores = []
     print(f"\nExecutando Experimento")
+    inicio = time.perf_counter()
     for _ in range(n_execucoes):
             
         melhor_final, historico = rodar_algoritmo_genetico(
-            tamanho_populacao, taxa_crossover, taxa_mutacao, n_geracoes
+            tamanho_populacao, tamanho_torneio, taxa_crossover, taxa_mutacao, n_geracoes, n_elite
         )
             
         melhores.append(melhor_final)
@@ -145,20 +147,24 @@ def experimento(tamanho_populacao=50, n_geracoes=400, n_execucoes=30, taxa_cross
         for g, fit in enumerate(historico):
             dados_convergencia.append({"geracao": g, "melhor_fitness": fit})
 
-    resultados.append({ "melhor": min(melhores), "média": sum(melhores) / len(melhores), "desvio de padrão": round(float(numpy.std(melhores)), 2) })
+    fim = time.perf_counter()
+    execucao = round(fim - inicio, 2)
+    resultados.append({ "Tempo de execução": f"{execucao}s", "melhor": min(melhores), "média": sum(melhores) / len(melhores), "desvio de padrão": round(float(numpy.std(melhores)), 2) })
 
-    return dados_convergencia, resultados, melhores
+    return dados_convergencia, resultados, melhores, execucao
 
 
 # === Execução principal ===
 if __name__ == "__main__":
     
-    dados_convergencia, res, melhores = experimento(
+    dados_convergencia, res, melhores, execucao = experimento(
         tamanho_populacao=50,
-        n_geracoes=500,
+        tamanho_torneio=3,
+        n_geracoes=400,
         n_execucoes=30,
         taxa_crossover=0.9,
         taxa_mutacao=0.05,
+        n_elite=5
     )
         
     # Printa resultados
